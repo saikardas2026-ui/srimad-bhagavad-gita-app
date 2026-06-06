@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "শ্রীমদ্ভগবদ্গীতা"
+version = "1.0.0"
+id = "artifacts/gita-app"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25179
+
+[services.development]
+run = "pnpm --filter @workspace/gita-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/gita-app", "run", "build" ]
+publicDir = "artifacts/gita-app/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25179"
+BASE_PATH = "/"
