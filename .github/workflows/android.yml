@@ -11,52 +11,36 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+          node-version: 18
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm install --legacy-peer-deps
 
-      - name: Build web assets
-        run: PORT=3000 BASE_PATH=/ pnpm run build
-        working-directory: artifacts/gita-app
+      - name: Build web project
+        run: npm run build
 
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - name: Sync Capacitor with Android
+        run: npx cap sync
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: 'zulu'
+          java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Build Android Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
 
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli@8
-
-      - name: Sync Capacitor Android
-        run: npx cap sync android
-        working-directory: artifacts/gita-app
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-        working-directory: artifacts/gita-app/android
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
-        working-directory: artifacts/gita-app/android
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
         with:
           name: gita-app-debug-apk
-          path: artifacts/gita-app/android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 3
